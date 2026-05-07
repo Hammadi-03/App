@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Star, Edit, MoreVertical, Trash2 } from 'lucide-react';
+import { Star, Edit, MoreVertical, Trash2, Settings, Brain, Bell, MessageSquare, LogOut } from 'lucide-react';
 import { MODELS } from '../../constants';
+import ArtifactsSection from '../artifacts/ArtifactsSection';
 
 export default function Sidebar({ 
   chats, 
@@ -12,11 +13,14 @@ export default function Sidebar({
   onClose,
   activeModelId,
   onModelChange,
-  onRenameChat
+  onRenameChat,
+  user,
+  onLogout
 }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const noiseSvg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`;
 
@@ -69,6 +73,8 @@ export default function Sidebar({
             ))}
           </div>
         </div>
+
+        <ArtifactsSection />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 relative z-10 custom-scrollbar">
@@ -153,6 +159,69 @@ export default function Sidebar({
           ))}
         </div>
       </div>
+
+
+      {user && (
+        <div className="p-3 border-t border-white/10 relative z-50">
+          {isAccountMenuOpen && (
+            <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#2a2d3e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden transform transition-all shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+              <div className="p-4 border-b border-white/10">
+                <div className="text-sm font-medium text-white">{user.name || user.username || 'User'}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{user.email || 'user@example.com'}</div>
+              </div>
+              
+              <div className="p-2 border-b border-white/10 flex flex-col gap-1">
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">
+                  <Settings size={16} className="text-gray-400" /> Settings
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">
+                  <Brain size={16} className="text-gray-400" /> Memory
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">
+                  <Bell size={16} className="text-gray-400" /> Reminders
+                </button>
+                <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">
+                  <MessageSquare size={16} className="text-gray-400" /> Give feedback
+                </button>
+              </div>
+
+              <div className="p-3 border-b border-white/10">
+                <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 hover:bg-indigo-500/20 transition-colors cursor-pointer">
+                  <h4 className="text-sm font-medium text-indigo-300 mb-1">Get the best of Murjan-AI</h4>
+                  <p className="text-xs text-gray-400"> Soon...</p>
+                </div>
+              </div>
+
+              <div className="p-2">
+                <button 
+                  onClick={() => {
+                    setIsAccountMenuOpen(false);
+                    if (onLogout) onLogout();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors"
+                >
+                  <LogOut size={16} className="text-gray-400" /> Sign out
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+            className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-sm">
+                {(user.name || user.username || 'U')[0].toUpperCase()}
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors">{user.name || user.username || 'User'}</span>
+                <span className="text-xs text-gray-500">Free Plan</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
 
     </div>
   );

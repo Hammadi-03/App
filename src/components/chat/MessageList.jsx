@@ -1,12 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, ShieldCheck, ExternalLink, AlertTriangle } from 'lucide-react';
 import { TextShimmer } from '../ui/text-shimmer';
 import { Typewriter } from '../ui/typewriter';
+import { AudioControls } from '../ui/AudioControls';
+import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 
 export default function MessageList({ messages, isTyping }) {
   const messagesEndRef = useRef(null);
+  const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
+  const { speak, pause, stop, isSpeaking, isPaused } = useTextToSpeech();
+
+  useEffect(() => {
+    // Auto-read the latest assistant message
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && lastMessage.content && lastMessage.content !== 'OPENROUTER_ACCOUNT_SETUP_REQUIRED') {
+        const lastMessageIndex = messages.length - 1;
+        setSpeakingMessageIndex(lastMessageIndex);
+        speak(lastMessage.content);
+      }
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -130,8 +146,25 @@ export default function MessageList({ messages, isTyping }) {
                       Putting the think in thinking ...
                     </TextShimmer>
                   ) : (
-                    <div className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-[#1a1c25] prose-pre:border prose-pre:border-white/5 max-w-none">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <div>
+                      <div className="prose prose-invert prose-p:leading-relaxed prose-pre:bg-[#1a1c25] prose-pre:border prose-pre:border-white/5 max-w-none">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                      {msg.content && (
+                        <AudioControls
+                          isSpeaking={isSpeaking && speakingMessageIndex === index}
+                          isPaused={isPaused && speakingMessageIndex === index}
+                          onPlay={() => {
+                            setSpeakingMessageIndex(index);
+                            speak(msg.content);
+                          }}
+                          onPause={() => pause()}
+                          onStop={() => {
+                            stop();
+                            setSpeakingMessageIndex(null);
+                          }}
+                        />
+                      )}
                     </div>
                   )
                 ) : (

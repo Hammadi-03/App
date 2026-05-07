@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LogOut } from 'lucide-react';
 import { HamburgerMenu } from './components/ui/HamburgerMenu';
 import { AIChatInput } from './components/ui/ai-chat-input';
@@ -47,6 +47,14 @@ export default function App() {
   const [ollamaStatus, setOllamaStatus] = useState('checking');
   const [webllmProgress, setWebllmProgress] = useState({ text: '', progress: 0, loading: false });
   const [isLanding, setIsLanding] = useState(true);
+  const scrollContainerRef = useRef(null);
+
+  // Auto-scroll to bottom while AI is streaming a response
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [activeChat?.messages, isTyping]);
 
   const { user, loading: authLoading, login, register, logout, token } = useAuth();
 
@@ -201,6 +209,8 @@ export default function App() {
         activeModelId={currentModel}
         onModelChange={setCurrentModel}
         onRenameChat={renameChat}
+        user={user}
+        onLogout={logout}
       />
 
       <main className="flex-1 flex flex-col bg-[#1e212b]/40 backdrop-blur-xl relative z-10 border border-white/5 overflow-hidden m-2 md:m-3 rounded-[24px] md:rounded-[32px] shadow-2xl">
@@ -220,25 +230,13 @@ export default function App() {
               <span className="text-[10px] text-green-500 font-medium uppercase tracking-tight">AI Active</span>
             </div>
           )}
-          {user && (
-            <div className="flex items-center gap-3 ml-4 pointer-events-auto">
-              <div className="h-4 w-px bg-white/10 mx-1"></div>
-              <span className="text-xs text-gray-500 font-medium lowercase">@{user.username}</span>
-              <button 
-                onClick={logout}
-                className="text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-tighter"
-              >
-                <LogOut size={12} /> Sign Out
-              </button>
-            </div>
-          )}
         </div>
 
         {isSidebarOpen && (
           <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />
         )}
 
-        <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-4 pt-4 pb-48 custom-scrollbar relative">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-4 pt-4 pb-48 custom-scrollbar relative">
           <Suspense fallback={<div className="h-full" />}>
             {isLanding ? (
               <WelcomeScreen onNewChat={handleStartChat} />

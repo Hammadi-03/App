@@ -13,7 +13,7 @@ export default function WelcomeScreen({ onNewChat }) {
         className="flex flex-col items-center mt-20"
       >
         <div className="text-4xl md:text-6xl font-qatar text-white leading-tight font-medium mb-4 min-h-[1.5em] flex flex-col items-center">
-          <h1 className="mb-2">Hello, Mnusia👋</h1>
+          <h1 className="mb-2">Hello, Manusia👋</h1>
           <div className="text-white/60">
             <Typewriter
               text={[
