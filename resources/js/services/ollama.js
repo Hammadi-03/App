@@ -13,7 +13,8 @@ export const ollamaService = {
   chatStream: async (messages, modelId = 'qwen2.5:7b', onChunk) => {
     try {
       const token = Cookies.get('auth_token');
-      const response = await fetch('/api/chat/ollama', {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_BASE}/api/chat/ollama`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

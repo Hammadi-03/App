@@ -55,7 +55,7 @@ export default function AuthScreen({ onLogin, onRegister }) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
             className="text-[#aeb5cc] text-[15px] leading-relaxed max-w-[320px] mx-auto"
           >
-            Create an account or sign in to keep all your conversations and to generate images
+            Create an account or log in to keep all your conversations and to generate images
           </motion.p>
         </div>
 
@@ -125,7 +125,7 @@ export default function AuthScreen({ onLogin, onRegister }) {
               type="submit" disabled={loading}
               className="mt-2 w-full bg-[#3b4361] hover:bg-[#464e70] border border-[#525a7a]/50 text-white font-medium py-3.5 rounded-full transition-colors duration-200 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? <Loader2 className="animate-spin" size={18} /> : (isLogin ? 'Log In' : 'Create Account')}
             </button>
           </form>
 
@@ -136,7 +136,7 @@ export default function AuthScreen({ onLogin, onRegister }) {
               onClick={() => { setIsLogin(!isLogin); setMessage(null); }}
               className="text-[#aeb5cc] hover:text-white text-[13px] font-medium transition-colors duration-200 py-2 px-4"
             >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
             </button>
           </div>
         </div>

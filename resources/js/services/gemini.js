@@ -1,16 +1,15 @@
 /**
- * OpenRouter service – calls our secure Express backend.
- * No API key is stored or used here; the backend manages it server-side
- * and handles all fallbacks safely.
+ * Gemini service – calls our secure Express backend.
+ * No API key is stored or used here; the backend holds it server-side.
  */
 
 
 
 import Cookies from 'js-cookie';
 
-export const openrouterService = {
+export const geminiService = {
   /**
-   * Streams an OpenRouter response via our backend proxy.
+   * Streams a Gemini response via our backend proxy.
    *
    * @param {{ role: string, content: string }[]} messages
    * @param {string} modelId
@@ -18,7 +17,8 @@ export const openrouterService = {
    */
   chatStream: async (messages, modelId, onChunk) => {
     const token = Cookies.get('auth_token');
-    const response = await fetch('/api/chat/openrouter', {
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const response = await fetch(`${API_BASE}/api/chat/gemini`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -28,6 +28,9 @@ export const openrouterService = {
     });
 
     if (!response.ok) {
+      if (response.status === 405) {
+        throw new Error('Server error 405 (Method Not Allowed). Please try again or contact support.');
+      }
       const err = await response.json().catch(() => ({}));
       throw new Error(err.error || `Server error ${response.status}`);
     }

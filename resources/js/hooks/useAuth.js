@@ -8,7 +8,8 @@ export function useAuth() {
 
   const fetchUser = useCallback(async (authToken) => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_BASE}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -36,7 +37,8 @@ export function useAuth() {
   }, [token, fetchUser]);
 
   const login = async (username, password) => {
-    const response = await fetch('/api/auth/login', {
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const response = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -54,7 +56,8 @@ export function useAuth() {
   };
 
   const register = async (username, password, email) => {
-    const response = await fetch('/api/auth/register', {
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const response = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, email })
