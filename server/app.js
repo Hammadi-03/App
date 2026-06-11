@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { chatGemini } from './routes/gemini.js';
 import { chatOpenRouter } from './routes/openrouter.js';
 import { chatOllama } from './routes/ollama.js';
-import { login, register, me } from './routes/auth.js';
+import { login, register, me, forgotPassword, resetPassword, googleAuthUrl, googleCallback, updateProfile } from './routes/auth.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'murjan-ai-secret-key-12345';
@@ -58,6 +58,15 @@ app.get('/tags', authMiddleware, async (c) => {
 app.post('/auth/register', register);
 app.post('/auth/login', login);
 app.get('/auth/me', me);
+app.put('/auth/me', authMiddleware, updateProfile);
+
+// Password Reset Routes
+app.post('/auth/forgot-password', forgotPassword);
+app.post('/auth/reset-password', resetPassword);
+
+// Google OAuth2 Routes
+app.get('/auth/google/url', googleAuthUrl);
+app.post('/auth/google/callback', googleCallback);
 
 // Protected Chat Routes
 app.post('/chat/gemini', authMiddleware, chatGemini);

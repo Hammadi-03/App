@@ -2,10 +2,22 @@
 
 @theme {
   --animate-shimmer: shimmer 1.5s infinite;
+  --animate-spotlight: spotlight 2s ease .75s 1 forwards;
 
   @keyframes shimmer {
     100% {
       transform: translateX(100%);
+    }
+  }
+
+  @keyframes spotlight {
+    0% {
+      opacity: 0;
+      transform: translate(-72%, -62%) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%,-40%) scale(1);
     }
   }
 }

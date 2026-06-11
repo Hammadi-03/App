@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Edit, MoreVertical, Trash2, Settings, Brain, Bell, MessageSquare, LogOut } from 'lucide-react';
 import { MODELS } from '../../constants';
-import ArtifactsSection from '../artifacts/ArtifactsSection';
 
 export default function Sidebar({ 
   chats, 
@@ -15,7 +14,8 @@ export default function Sidebar({
   onModelChange,
   onRenameChat,
   user,
-  onLogout
+  onLogout,
+  onOpenSettings
 }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [editingChatId, setEditingChatId] = useState(null);
@@ -73,8 +73,6 @@ export default function Sidebar({
             ))}
           </div>
         </div>
-
-        <ArtifactsSection />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 relative z-10 custom-scrollbar">
@@ -171,7 +169,13 @@ export default function Sidebar({
               </div>
               
               <div className="p-2 border-b border-white/10 flex flex-col gap-1">
-                <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">
+                <button 
+                  onClick={() => {
+                    setIsAccountMenuOpen(false);
+                    if (onOpenSettings) onOpenSettings();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors"
+                >
                   <Settings size={16} className="text-gray-400" /> Settings
                 </button>
                 <button className="w-full text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/5 rounded-md flex items-center gap-3 transition-colors">

@@ -8,6 +8,10 @@ import { TextShimmer } from './components/ui/text-shimmer';
 import { MODELS, DEFAULT_MODEL } from './constants';
 import { useAuth } from './hooks/useAuth';
 import AuthScreen from './components/auth/AuthScreen';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
+import SettingsModal from './components/ui/SettingsModal';
+import PrivacyPolicy from './components/pages/PrivacyPolicy';
+import TermsOfService from './components/pages/TermsOfService';
 import Cookies from 'js-cookie';
 
 // Lazy-loaded components (code-split for faster initial load)
@@ -47,6 +51,7 @@ export default function App() {
   const [ollamaStatus, setOllamaStatus] = useState('checking');
   const [webllmProgress, setWebllmProgress] = useState({ text: '', progress: 0, loading: false });
   const [isLanding, setIsLanding] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const scrollContainerRef = useRef(null);
 
   // Auto-scroll to bottom while AI is streaming a response
@@ -56,7 +61,7 @@ export default function App() {
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [activeChat?.messages, isTyping]);
 
-  const { user, loading: authLoading, login, register, logout, token } = useAuth();
+  const { user, loading: authLoading, login, register, logout, token, forgotPassword, resetPassword, loginWithGoogle, updateProfile } = useAuth();
 
   // API Keys are now strictly handled by the expressive backend
   // The frontend no longer requests keys from .env.
@@ -156,7 +161,20 @@ export default function App() {
     }
   };
 
-  if (authLoading) {
+  // ─── Handle Google OAuth callback redirect ─────────────────────────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const googleCode = urlParams.get('code');
+  const isGoogleCallback = window.location.pathname === '/auth/google/callback' && googleCode;
+
+  // ─── Detect standalone pages ────────────────────────────────────────────────
+  const isResetPassword = window.location.pathname === '/reset-password';
+  const isPrivacyPolicy = window.location.pathname === '/privacy-policy';
+  const isTermsOfService = window.location.pathname === '/terms-of-service';
+
+  if (isPrivacyPolicy) return <PrivacyPolicy />;
+  if (isTermsOfService) return <TermsOfService />;
+
+  if (authLoading && !isResetPassword) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
@@ -164,8 +182,34 @@ export default function App() {
     );
   }
 
+  // Show reset password page (accessible without being logged in)
+  if (isResetPassword) {
+    return <ResetPasswordPage onResetPassword={resetPassword} />;
+  }
+
+  // Handle Google OAuth callback
+  if (isGoogleCallback) {
+    // Strip code from URL and let AuthScreen handle it
+    const cleanParams = new URLSearchParams(urlParams);
+    cleanParams.delete('code');
+    cleanParams.delete('scope');
+    cleanParams.delete('authuser');
+    cleanParams.delete('prompt');
+    cleanParams.set('google_code', googleCode);
+    window.history.replaceState({}, '', `${window.location.pathname}?${cleanParams.toString()}`);
+    window.location.href = `/?google_code=${googleCode}`;
+    return null;
+  }
+
   if (!user) {
-    return <AuthScreen onLogin={login} onRegister={register} />;
+    return (
+      <AuthScreen
+        onLogin={login}
+        onRegister={register}
+        onForgotPassword={forgotPassword}
+        onGoogleSignIn={loginWithGoogle}
+      />
+    );
   }
 
   return (
@@ -211,6 +255,14 @@ export default function App() {
         onRenameChat={renameChat}
         user={user}
         onLogout={logout}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        user={user} 
+        onSave={updateProfile} 
       />
 
       <main className="flex-1 flex flex-col bg-[#1e212b]/40 backdrop-blur-xl relative z-10 border border-white/5 overflow-hidden m-2 md:m-3 rounded-[24px] md:rounded-[32px] shadow-2xl">
@@ -224,12 +276,6 @@ export default function App() {
 
         <div className="absolute top-6 left-1/2 -translate-x-1/2 md:left-20 md:translate-x-0 select-none flex items-center gap-3 z-40 pointer-events-none">
           <h1 className="font-qatar text-xl font-medium tracking-wide text-white opacity-40">Murjan</h1>
-          {ollamaStatus === 'online' && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 border border-green-500/20 rounded-full">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-[10px] text-green-500 font-medium uppercase tracking-tight">AI Active</span>
-            </div>
-          )}
         </div>
 
         {isSidebarOpen && (
