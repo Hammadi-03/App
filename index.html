@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BudgetMate – Personal Budget & Shopping Tracker</title>
+  <meta name="description" content="A smart personal budget and shopping tracker for college students and moms. Track expenses and income in IDR (Rupiah) and QAR (Qatari Riyal) with custom categories." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR OVERLAY (mobile) ===== -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon">💰</div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">BudgetMate</span>
+      <span class="sidebar-brand-sub" data-i18n="brandSub">Smart Tracker</span>
+    </div>
+  </div>
+
+  <!-- Nav links -->
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" id="navDashboard" data-page="dashboard" aria-current="page">
+      <span class="material-icons-round nav-icon">dashboard</span>
+      <span class="nav-label" data-i18n="navDashboard">Dashboard</span>
+    </a>
+    <a href="#" class="nav-item" id="navTransactions" data-page="transactions">
+      <span class="material-icons-round nav-icon">receipt_long</span>
+      <span class="nav-label" data-i18n="navTransactions">Transactions</span>
+    </a>
+    <a href="#" class="nav-item" id="navCategories" data-page="categories">
+      <span class="material-icons-round nav-icon">category</span>
+      <span class="nav-label" data-i18n="navCategories">Categories</span>
+    </a>
+    <a href="#" class="nav-item" id="navSummary" data-page="summary">
+      <span class="material-icons-round nav-icon">bar_chart</span>
+      <span class="nav-label" data-i18n="navSummary">Summary</span>
+    </a>
+  </nav>
+
+
+
+  <!-- Sidebar footer -->
+  <div class="sidebar-footer">
+    <!-- Language Toggle -->
+    <div class="lang-toggle-group">
+      <button class="lang-btn active" id="langEN" data-lang="en" aria-label="Switch to English">EN</button>
+      <span class="lang-divider">|</span>
+      <button class="lang-btn" id="langID" data-lang="id" aria-label="Beralih ke Bahasa Indonesia">ID</button>
+    </div>
+    <!-- Theme Toggle -->
+    <button class="btn-icon sidebar-theme-btn" id="themeToggleBtn" title="Toggle theme" aria-label="Toggle dark/light theme">
+      <span class="material-icons-round" id="themeIcon">dark_mode</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== MAIN AREA ===== -->
+<div class="app-shell">
+
+  <!-- Top Bar -->
+  <header class="topbar" role="banner">
+    <button class="topbar-hamburger" id="hamburgerBtn" aria-label="Toggle sidebar" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-title-wrap">
+      <h1 class="topbar-title" id="topbarPageTitle" data-i18n="navDashboard">Dashboard</h1>
+      <p class="topbar-subtitle" data-i18n="topbarWelcome">Welcome back! Track your budget.</p>
+    </div>
+    <div class="topbar-right">
+      <!-- Currency selector -->
+      <div class="currency-tabs" role="tablist" aria-label="Display currency">
+        <button class="currency-tab active" id="tabIDR" role="tab" aria-selected="true" data-currency="IDR">🇮🇩 IDR</button>
+        <button class="currency-tab" id="tabQAR" role="tab" aria-selected="false" data-currency="QAR">🇶🇦 QAR</button>
+      </div>
+      <button class="btn-primary topbar-add-btn" id="openFormBtn" aria-label="Add transaction">
+        <span class="material-icons-round btn-add-icon">add</span>
+        <span data-i18n="addTransaction">Add Transaction</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <main class="page-content" id="pageContent">
+
+    <!-- ─── PAGE: DASHBOARD ─── -->
+    <section class="page" id="pageDashboard" data-page="dashboard">
+
+      <!-- Summary Cards -->
+      <div class="summary-grid" aria-label="Financial summary">
+        <div class="summary-card income-card" data-aos="fade-up" data-aos-delay="50">
+          <div class="card-icon-container income-gradient">
+            <span class="material-icons-round">trending_up</span>
+          </div>
+          <div class="card-content">
+            <p class="card-label" data-i18n="totalIncome">Total Income</p>
+            <p class="card-value" id="totalIncomeDisplay">Rp 0</p>
+            <p class="card-count" id="incomeCount" data-i18n-count="transactions">0 transactions</p>
+          </div>
+        </div>
+        <div class="summary-card expense-card" data-aos="fade-up" data-aos-delay="150">
+          <div class="card-icon-container expense-gradient">
+            <span class="material-icons-round">trending_down</span>
+          </div>
+          <div class="card-content">
+            <p class="card-label" data-i18n="totalExpenses">Total Expenses</p>
+            <p class="card-value" id="totalExpenseDisplay">Rp 0</p>
+            <p class="card-count" id="expenseCount" data-i18n-count="transactions">0 transactions</p>
+          </div>
+        </div>
+        <div class="summary-card balance-card" id="balanceCard" data-aos="fade-up" data-aos-delay="250">
+          <div class="card-icon-container balance-gradient">
+            <span class="material-icons-round">account_balance_wallet</span>
+          </div>
+          <div class="card-content">
+            <p class="card-label" data-i18n="netBalance">Net Balance</p>
+            <p class="card-value" id="balanceDisplay">Rp 0</p>
+            <p class="card-count" id="savingsRate"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CHART ROW: Financial Overview + Category Donut ── -->
+      <div class="chart-row" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Financial Overview Area Chart -->
+        <div class="panel chart-panel-main">
+          <div class="panel-header primary-gradient">
+            <div>
+              <h2 class="panel-title">Financial Overview</h2>
+              <p class="chart-subtitle" id="chartSubtitle">Income &amp; Expenses over time</p>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-dot" style="background: #4caf50;"></span><span class="legend-label">Income</span>
+              <span class="legend-dot" style="background: #f44336; margin-left:12px;"></span><span class="legend-label">Expenses</span>
+            </div>
+          </div>
+          <div class="panel-body chart-body">
+            <canvas id="overviewChart"></canvas>
+            <div class="chart-empty" id="overviewChartEmpty">
+              <span class="material-icons-round" style="font-size:2.5rem;opacity:0.25;">show_chart</span>
+              <p>Add transactions to see your financial trend</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Donut Chart -->
+        <div class="panel chart-panel-side">
+          <div class="panel-header secondary-gradient">
+            <h2 class="panel-title">Spending by Category</h2>
+          </div>
+          <div class="panel-body chart-body-side">
+            <canvas id="categoryDonutChart"></canvas>
+            <div class="donut-legend" id="donutLegend"></div>
+            <div class="chart-empty" id="donutChartEmpty">
+              <span class="material-icons-round" style="font-size:2.5rem;opacity:0.25;">donut_large</span>
+              <p>No expense data yet</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Category Breakdown & Recent Transactions -->
+      <div class="dashboard-row">
+        <div class="panel breakdown-panel" data-aos="fade-right" data-aos-delay="100">
+          <div class="panel-header secondary-gradient">
+            <h2 class="panel-title" data-i18n="categoryBreakdown">Category Breakdown</h2>
+          </div>
+          <div class="panel-body">
+            <div class="breakdown-grid" id="categoryBreakdownGrid">
+              <p class="empty-state-sm" data-i18n="noTransactionsBreakdown">No transactions yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions (dashboard preview) -->
+        <div class="panel recent-panel" data-aos="fade-left" data-aos-delay="100">
+          <div class="panel-header secondary-gradient">
+            <h2 class="panel-title" data-i18n="recentTransactions">Recent Transactions</h2>
+            <button class="btn-link" id="seeAllBtn" data-i18n="seeAll">See all →</button>
+          </div>
+          <div class="panel-body">
+            <div class="transaction-list" id="recentTransactionList">
+              <div class="empty-state">
+                <div class="empty-icon"><span class="material-icons-round" style="font-size: 3rem; opacity: 0.3;">shopping_cart</span></div>
+                <p class="empty-title" data-i18n="noTransactionsYet">No transactions yet!</p>
+                <p class="empty-desc" data-i18n="addFirstTransaction">Click "Add Transaction" to start.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PAGE: TRANSACTIONS ─── -->
+    <section class="page hidden" id="pageTransactions" data-page="transactions">
+      <div class="panel" data-aos="fade-up" data-aos-duration="500">
+        <div class="panel-header primary-gradient">
+          <h2 class="panel-title" data-i18n="allTransactions">All Transactions</h2>
+        </div>
+        <div class="panel-body">
+          <div class="filter-row">
+            <input type="text" id="filterSearch" class="select-filter" data-i18n-placeholder="searchPlaceholder" placeholder="Search description..." aria-label="Search description" style="cursor: text; width: 170px;" />
+            <select class="select-filter" id="filterType" aria-label="Filter by type">
+              <option value="all" data-i18n="allTypes">All Types</option>
+              <option value="income" data-i18n="income">Income</option>
+              <option value="expense" data-i18n="expense">Expense</option>
+            </select>
+            <select class="select-filter" id="filterCategory" aria-label="Filter by category">
+              <option value="all" data-i18n="allCategories">All Categories</option>
+            </select>
+            <button class="btn-danger-outline" id="clearAllBtn" aria-label="Clear all transactions">
+              <span class="material-icons-round btn-icon-inline">delete</span> <span data-i18n="clearAll">Clear All</span>
+            </button>
+          </div>
+          <div class="transaction-list" id="transactionList">
+            <div class="empty-state">
+              <div class="empty-icon"><span class="material-icons-round" style="font-size: 3rem; opacity: 0.3;">shopping_cart</span></div>
+              <p class="empty-title" data-i18n="noTransactionsYet">No transactions yet!</p>
+              <p class="empty-desc" data-i18n="addFirstTransaction">Click "Add Transaction" to start.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PAGE: CATEGORIES ─── -->
+    <section class="page hidden" id="pageCategories" data-page="categories">
+      <div class="panel" data-aos="fade-up" data-aos-duration="500">
+        <div class="panel-header primary-gradient">
+          <h2 class="panel-title" data-i18n="manageCategories">Manage Categories</h2>
+        </div>
+        <div class="panel-body cat-page-body">
+          <div class="add-cat-row">
+            <input type="text" id="pageCatInput" class="form-input flex-1" data-i18n-placeholder="categoryNamePlaceholder" placeholder="Category name…" maxlength="40" aria-label="New category name" />
+            <select id="pageCatType" class="form-input w-160" aria-label="Category type">
+              <option value="both" data-i18n="both">Both</option>
+              <option value="income" data-i18n="income">Income</option>
+              <option value="expense" data-i18n="expense">Expense</option>
+            </select>
+            <button class="btn-primary" id="pageAddCategoryBtn">
+              <span class="material-icons-round btn-icon-inline">add</span> <span data-i18n="addCategory">Add Category</span>
+            </button>
+          </div>
+          <span class="error-msg" id="errPageCat" role="alert"></span>
+          <ul class="cat-list" id="pageCatList" aria-label="Category list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PAGE: SUMMARY ─── -->
+    <section class="page hidden" id="pageSummary" data-page="summary">
+      <div class="summary-page-grid">
+        <div class="panel summary-stat-card" data-aos="fade-up" data-aos-delay="50">
+          <p class="stat-label" data-i18n="totalTransactions">Total Transactions</p>
+          <p class="stat-value" id="statTotalTx">0</p>
+        </div>
+        <div class="panel summary-stat-card" data-aos="fade-up" data-aos-delay="100">
+          <p class="stat-label" data-i18n="avgExpense">Avg. Expense</p>
+          <p class="stat-value" id="statAvgExp">Rp 0</p>
+        </div>
+        <div class="panel summary-stat-card" data-aos="fade-up" data-aos-delay="150">
+          <p class="stat-label" data-i18n="avgIncome">Avg. Income</p>
+          <p class="stat-value" id="statAvgInc">Rp 0</p>
+        </div>
+        <div class="panel summary-stat-card" data-aos="fade-up" data-aos-delay="200">
+          <p class="stat-label" data-i18n="savingsRate">Savings Rate</p>
+          <p class="stat-value" id="statSavingsRate">0%</p>
+        </div>
+      </div>
+      <div class="panel" data-aos="fade-up" data-aos-delay="250">
+        <div class="panel-header primary-gradient">
+          <h2 class="panel-title" data-i18n="topCategories">Top Spending Categories</h2>
+        </div>
+        <div class="panel-body">
+          <div id="topCategoriesList" class="top-cat-list">
+            <p class="empty-state-sm" data-i18n="noTransactionsBreakdown">No transactions yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODAL: ADD TRANSACTION ===== -->
+<div class="modal-overlay" id="transactionModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle" data-i18n="addTransactionTitle">Add Transaction</h2>
+      <button class="modal-close" id="closeModalBtn" aria-label="Close modal">✕</button>
+    </div>
+    <form class="modal-form" id="transactionForm" novalidate autocomplete="off">
+
+      <!-- TYPE -->
+      <fieldset class="type-toggle-group" aria-label="Transaction type">
+        <legend class="form-label"><span data-i18n="type">Type</span> <span class="required">*</span></legend>
+        <div class="type-toggle">
+          <label class="type-btn">
+            <input type="radio" name="txType" value="income" id="txIncome" checked />
+            <span>📈 <span data-i18n="income">Income</span></span>
+          </label>
+          <label class="type-btn">
+            <input type="radio" name="txType" value="expense" id="txExpense" />
+            <span>📉 <span data-i18n="expense">Expense</span></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- DESCRIPTION -->
+      <div class="form-group">
+        <label for="txDescription" class="form-label"><span data-i18n="description">Description</span> <span class="required">*</span></label>
+        <input type="text" id="txDescription" name="txDescription" class="form-input" data-i18n-placeholder="descriptionPlaceholder" placeholder="e.g. Groceries, Monthly salary…" maxlength="100" aria-required="true" />
+        <span class="error-msg" id="errDescription" role="alert"></span>
+      </div>
+
+      <!-- AMOUNT & CURRENCY -->
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label for="txAmount" class="form-label"><span data-i18n="amount">Amount</span> <span class="required">*</span></label>
+          <input type="number" id="txAmount" name="txAmount" class="form-input" placeholder="0" min="1" step="any" aria-required="true" />
+          <span class="error-msg" id="errAmount" role="alert"></span>
+        </div>
+        <div class="form-group w-180">
+          <label for="txCurrency" class="form-label"><span data-i18n="currency">Currency</span> <span class="required">*</span></label>
+          <select id="txCurrency" name="txCurrency" class="form-input" aria-required="true">
+            <option value="IDR">🇮🇩 IDR – Rupiah</option>
+            <option value="QAR">🇶🇦 QAR – Riyal</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CONVERSION PREVIEW -->
+      <div class="conversion-preview" id="conversionPreview" aria-live="polite"></div>
+
+      <div class="form-group">
+        <label for="txCategory" class="form-label"><span data-i18n="category">Category</span> <span class="required">*</span></label>
+        <div class="category-row">
+          <select id="txCategory" name="txCategory" class="form-input flex-1" aria-required="true"></select>
+          <button type="button" class="btn-secondary-sm" id="addCategoryInlineBtn" data-i18n="newCategory">
+            <span class="material-icons-round btn-icon-inline" style="font-size: 1rem; vertical-align: middle;">add</span> <span style="vertical-align: middle;">New</span>
+          </button>
+        </div>
+        <span class="error-msg" id="errCategory" role="alert"></span>
+      </div>
+
+      <!-- DATE -->
+      <div class="form-group">
+        <label for="txDate" class="form-label"><span data-i18n="date">Date</span> <span class="required">*</span></label>
+        <input type="date" id="txDate" name="txDate" class="form-input" aria-required="true" />
+        <span class="error-msg" id="errDate" role="alert"></span>
+      </div>
+
+      <!-- NOTES -->
+      <div class="form-group">
+        <label for="txNotes" class="form-label"><span data-i18n="notes">Notes</span> <span class="optional" data-i18n="optional">(optional)</span></label>
+        <textarea id="txNotes" name="txNotes" class="form-input form-textarea" data-i18n-placeholder="notesPlaceholder" placeholder="Any extra details…" maxlength="250" rows="2"></textarea>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="cancelFormBtn" data-i18n="cancel">Cancel</button>
+        <button type="submit" class="btn-primary" id="submitTxBtn" data-i18n="saveTransaction">Save Transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: QUICK ADD CATEGORY ===== -->
+<div class="modal-overlay" id="inlineCatModal" role="dialog" aria-modal="true" aria-labelledby="inlineCatTitle" hidden>
+  <div class="modal modal-xs">
+    <div class="modal-header">
+      <h2 class="modal-title" id="inlineCatTitle" data-i18n="quickAddCategory">Quick Add Category</h2>
+      <button class="modal-close" id="closeInlineCatBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="cat-modal-body">
+      <div class="form-group">
+        <label for="inlineCatName" class="form-label"><span data-i18n="categoryName">Category Name</span> <span class="required">*</span></label>
+        <input type="text" id="inlineCatName" class="form-input" data-i18n-placeholder="categoryNamePlaceholder" placeholder="e.g. Transport, Freelance…" maxlength="40" />
+        <span class="error-msg" id="errInlineCat" role="alert"></span>
+      </div>
+      <div class="form-group">
+        <label for="inlineCatType" class="form-label" data-i18n="appliesTo">Applies To</label>
+        <select id="inlineCatType" class="form-input">
+          <option value="both" data-i18n="bothIncomeExpense">Both Income &amp; Expense</option>
+          <option value="income" data-i18n="incomeOnly">Income only</option>
+          <option value="expense" data-i18n="expenseOnly">Expense only</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="cancelInlineCatBtn" data-i18n="cancel">Cancel</button>
+        <button type="button" class="btn-primary" id="saveInlineCatBtn" data-i18n="addCategory">Add Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
