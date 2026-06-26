@@ -946,7 +946,7 @@ body.light .topbar {
   color: var(--clr-text-2);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -954,6 +954,11 @@ body.light .topbar {
   font-family: var(--font);
   cursor: pointer;
   transition: all var(--transition);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: stretch;
 }
 .btn-secondary-sm:hover {
   background: linear-gradient(195deg, #ec407a, #d81b60);
@@ -965,7 +970,7 @@ body.light .topbar {
 .btn-ghost {
   background: transparent;
   color: var(--clr-text-2);
-  border: 1px solid var(--clr-border);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-sm);
   padding: 10px 24px;
   font-size: 0.75rem;
@@ -975,14 +980,19 @@ body.light .topbar {
   font-family: var(--font);
   cursor: pointer;
   transition: all var(--transition);
+  white-space: nowrap;
 }
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--clr-text);
   border-color: var(--clr-text-2);
 }
+body.light .btn-ghost {
+  border-color: rgba(0, 0, 0, 0.15);
+}
 body.light .btn-ghost:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger-outline {
@@ -1132,6 +1142,14 @@ body.light .btn-ghost:hover {
   appearance: none;
   -webkit-appearance: none;
 }
+select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237b809a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 32px;
+  cursor: pointer;
+}
 .form-input:focus {
   border-color: var(--clr-primary-2);
   box-shadow: 0 0 0 1px var(--clr-primary-2);
@@ -1156,28 +1174,59 @@ body.light .btn-ghost:hover {
 }
 
 /* Type Toggle */
-.type-toggle-group { border: none; margin-bottom: 16px; }
-.type-toggle { display: flex; gap: 7px; }
-.type-btn { flex: 1; cursor: pointer; }
-.type-btn input[type="radio"] { display: none; }
-.type-btn span {
+.type-toggle-group { border: none; margin-bottom: 16px; padding: 0; }
+.type-toggle { display: flex; gap: 8px; }
+.type-btn {
+  flex: 1;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+.type-btn input[type="radio"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.type-btn > span {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px 0;
+  padding: 11px 0;
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--clr-text-2);
   background: var(--clr-surface-2);
-  transition: all 0.18s;
+  transition: all 0.18s ease;
   user-select: none;
+  cursor: pointer;
 }
-.type-btn input:checked + span { border-color: transparent; color: #fff; }
-#txIncome:checked  + span { background: var(--clr-income); box-shadow: 0 4px 10px 0 rgba(76, 175, 80, 0.3); }
-#txExpense:checked + span { background: var(--clr-expense); box-shadow: 0 4px 10px 0 rgba(244, 67, 54, 0.3); }
+.type-btn:hover > span {
+  border-color: var(--clr-text-3);
+}
+.type-btn input:checked + span {
+  border-color: transparent;
+  color: #fff;
+}
+#txIncome:checked + span {
+  background: linear-gradient(195deg, #66bb6a, #43a047);
+  box-shadow: 0 4px 12px 0 rgba(76, 175, 80, 0.35);
+}
+#txExpense:checked + span {
+  background: linear-gradient(195deg, #ef5350, #e53935);
+  box-shadow: 0 4px 12px 0 rgba(244, 67, 54, 0.35);
+}
 
 /* Conversion preview */
 .conversion-preview {
@@ -1195,10 +1244,19 @@ body.light .btn-ghost:hover {
 .conversion-preview .conv-amount { font-weight: 700; color: var(--clr-primary-2); }
 
 /* Category row */
-.category-row { display: flex; gap: 8px; align-items: center; }
+.category-row { display: flex; gap: 8px; align-items: stretch; }
 
 /* Form actions */
-.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--clr-border);
+  flex-wrap: wrap;
+}
 
 /* ==============================================================
    TOAST
