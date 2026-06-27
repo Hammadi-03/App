@@ -1,0 +1,65 @@
+/**
+ * Gemini service – calls our secure Express backend.
+ * No API key is stored or used here; the backend holds it server-side.
+ */
+
+
+
+import Cookies from 'js-cookie';
+
+export const geminiService = {
+  /**
+   * Streams a Gemini response via our backend proxy.
+   *
+   * @param {{ role: string, content: string }[]} messages
+   * @param {string} modelId
+   * @param {(accumulatedText: string) => void} onChunk
+   */
+  chatStream: async (messages, modelId, onChunk) => {
+    const token = Cookies.get('auth_token');
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const response = await fetch(`${API_BASE}/api/chat/gemini`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ messages, modelId }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 405) {
+        throw new Error('Server error 405 (Method Not Allowed). Please try again or contact support.');
+      }
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Server error ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const lines = decoder.decode(value).split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6);
+        if (raw === '[DONE]') continue;
+
+        let parsed;
+        try { parsed = JSON.parse(raw); } catch (_) { continue; }
+
+        if (parsed.error) throw new Error(parsed.error);
+        if (parsed.content) {
+          fullContent += parsed.content;
+          onChunk(fullContent);
+        }
+      }
+    }
+
+    return fullContent;
+  },
+};
