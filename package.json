@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "start": "concurrently \"php artisan serve\" \"npm run server\" \"npm run dev\"",
-    "build": "vite build",
+    "build": "node scripts/build-static.mjs",
     "pages:dev": "wrangler pages dev dist --compatibility-date=2024-03-24",
     "lint": "eslint .",
     "preview": "vite preview",
