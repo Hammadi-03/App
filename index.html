@@ -304,6 +304,19 @@
     </div>
     <form class="modal-form" id="transactionForm" novalidate autocomplete="off">
 
+      <!-- SCAN RECEIPT -->
+      <div class="form-group" style="text-align: center; margin-bottom: 1rem;">
+        <input type="file" id="receiptScanner" accept="image/*" hidden />
+        <button type="button" class="btn-primary" id="scanReceiptBtn" style="width: 100%; background: linear-gradient(135deg, #7c4dff, #b388ff); color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <span class="material-icons-round">document_scanner</span>
+          <span data-i18n="scanReceiptAI">Scan Receipt (AI)</span>
+        </button>
+        <div id="scanLoading" style="display: none; margin-top: 0.5rem; font-size: 0.85rem; color: var(--clr-text-muted);">
+          <span class="material-icons-round" style="animation: spin 1s linear infinite; font-size: 1rem; vertical-align: middle;">autorenew</span> 
+          <span style="vertical-align: middle;">Scanning... Please wait.</span>
+        </div>
+      </div>
+
       <!-- TYPE -->
       <fieldset class="type-toggle-group" aria-label="Transaction type">
         <legend class="form-label"><span data-i18n="type">Type</span> <span class="required">*</span></legend>

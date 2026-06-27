@@ -1292,7 +1292,108 @@ function escapeHtml(str) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   19. EVENT LISTENERS
+   19. AI RECEIPT SCANNER
+══════════════════════════════════════════════════════════════ */
+
+async function processReceipt(file) {
+  let apiKey = localStorage.getItem('gemini_api_key');
+  if (!apiKey) {
+    apiKey = prompt("Please enter your Gemini API Key to use the receipt scanner:");
+    if (!apiKey) return;
+    localStorage.setItem('gemini_api_key', apiKey);
+  }
+
+  const scanBtn = document.getElementById('scanReceiptBtn');
+  const scanLoading = document.getElementById('scanLoading');
+  scanBtn.style.display = 'none';
+  scanLoading.style.display = 'block';
+
+  try {
+    const base64Str = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        resolve(result.substring(result.indexOf(',') + 1));
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const categoryList = DEFAULT_CATEGORIES.map(c => c.id).join(', ');
+    const promptText = `You are a receipt scanner. Extract all items from this receipt. Return a strict JSON array of objects without any markdown formatting. Each object MUST have these exact keys:
+- description: (string) name of the product
+- amount: (number) price of the product
+- category: (string) select the most appropriate category ID from this list: ${categoryList}. If unsure, use cat_other.
+- type: (string) always 'expense'`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: promptText },
+            { inlineData: { mimeType: file.type, data: base64Str } }
+          ]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || "Failed to call Gemini API");
+    }
+
+    const data = await response.json();
+    let textResponse = data.candidates[0].content.parts[0].text;
+    
+    // Clean up markdown block if present
+    textResponse = textResponse.replace(/^```json/m, '').replace(/^```/m, '').trim();
+
+    const items = JSON.parse(textResponse);
+    if (!Array.isArray(items)) throw new Error("API did not return an array.");
+
+    let addedCount = 0;
+    const today = new Date().toISOString().split('T')[0];
+
+    for (const item of items) {
+      if (item.description && item.amount) {
+        addTransaction({
+          type: 'expense',
+          description: String(item.description).substring(0, 100),
+          amount: Number(item.amount),
+          currency: state.displayCurrency,
+          category: item.category || 'cat_other',
+          date: today,
+          notes: 'Added via AI Scan'
+        });
+        addedCount++;
+      }
+    }
+
+    if (addedCount > 0) {
+      closeModal('transactionModal');
+      resetForm();
+      showToast(`Added ${addedCount} transactions from receipt! 🎉`, 'success');
+    } else {
+      showToast("No items could be extracted.", 'error');
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast("Error processing receipt: " + err.message, 'error');
+    if (err.message.includes('API key not valid')) {
+      localStorage.removeItem('gemini_api_key'); // clear invalid key
+    }
+  } finally {
+    scanBtn.style.display = 'flex';
+    scanLoading.style.display = 'none';
+    document.getElementById('receiptScanner').value = '';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   20. EVENT LISTENERS
 ══════════════════════════════════════════════════════════════ */
 
 function initEventListeners() {
@@ -1323,6 +1424,16 @@ function initEventListeners() {
   document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('transactionModal'));
   document.getElementById('cancelFormBtn').addEventListener('click', () => closeModal('transactionModal'));
   document.getElementById('transactionModal').addEventListener('click', e => handleOverlayClick(e, 'transactionModal'));
+
+  // ── AI Receipt Scanner ──
+  document.getElementById('scanReceiptBtn').addEventListener('click', () => {
+    document.getElementById('receiptScanner').click();
+  });
+  document.getElementById('receiptScanner').addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processReceipt(e.target.files[0]);
+    }
+  });
 
   // ── Form submit ──
   document.getElementById('transactionForm').addEventListener('submit', handleFormSubmit);
@@ -1466,7 +1577,7 @@ function initEventListeners() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   20. INIT
+   21. INIT
 ══════════════════════════════════════════════════════════════ */
 
 function init() {
