@@ -1,15 +1,9 @@
 /**
- * HTTP client for the media API.
+ * HTTP client for the Laravel + Breeze + Sanctum API.
  * Uses Bearer token auth (token stored in localStorage).
- * Configure the backend URL with VITE_API_URL for production deployments.
+ * The Vite dev server proxies all requests to Laravel at 127.0.0.1:8000
+ * so there are zero CORS issues.
  */
-
-const API_BASE_URL = import.meta.env.VITE_API_URL?.trim() ?? ''
-
-function buildUrl(path: string) {
-  const base = API_BASE_URL.replace(/\/+$|^\s+|\s+$/g, '')
-  return `${base}/${path}`.replace(/([^:]\/)\/+/, '$1')
-}
 
 // ── Token storage ─────────────────────────────────────────────
 const TOKEN_KEY = 'tv_token'
@@ -44,7 +38,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers['Content-Type'] = 'application/json'
   }
 
-  const res = await fetch(buildUrl(path), { ...options, headers })
+  const res = await fetch(`/${path}`, { ...options, headers })
 
   if (!res.ok) {
     let message = `Request failed: ${res.status}`
